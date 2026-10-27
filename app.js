@@ -11,7 +11,36 @@ const SAMPLE_TASKS = [
 ];
 
 let tasks = [];
-let weatherByRegion = {};   // 03 단원에서 지역별 날씨를 넣음
+let weatherByRegion = {};
+const testWind = new URLSearchParams(window.location.search).get('test') === 'wind';
+
+async function loadWeather() {
+  const box = document.getElementById('weatherBox');
+  const testNotice = testWind ? ' · 강풍 시험 중 (풍속 12m/s)' : '';
+  box.textContent = '오늘 날씨를 불러오는 중…' + testNotice;
+  const results = await Promise.allSettled(Object.keys(REGIONS).map(async (region) => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    try {
+      const response = await fetch(weatherUrl(region), { signal: controller.signal });
+      if (!response.ok) throw new Error('날씨 요청 실패');
+      weatherByRegion[region] = parseWeather(await response.json(), testWind);
+      renderTasks();
+    } finally {
+      clearTimeout(timeout);
+    }
+  }));
+  const regions = Object.keys(REGIONS);
+  const failed = regions.filter((region, index) => results[index].status === 'rejected');
+  box.textContent = (failed.length
+    ? '날씨 조회 실패: ' + failed.join(' · ') + ' — 잠시 후 새로고침해 주세요.'
+    : '오늘 날씨 조회 완료 (최고 기온 · 최대 풍속 · 강수확률)') + testNotice;
+  const source = document.createElement('a');
+  source.href = 'https://open-meteo.com/';
+  source.textContent = '날씨 제공: Open-Meteo';
+  box.appendChild(document.createTextNode(' · '));
+  box.appendChild(source);
+}
 
 function loadTasks() {
   const saved = JSON.parse(localStorage.getItem('wx_added') || '[]');
@@ -68,3 +97,4 @@ document.getElementById('todayDate').textContent = `${year}-${month}-${day}`;
 document.getElementById('taskForm').addEventListener('submit', addTask);
 loadTasks();
 renderTasks();
+loadWeather();
