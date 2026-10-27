@@ -21,7 +21,8 @@
 3. 끝나면 바꾼 파일, 내가 확인할 방법(T-번호), 남은 문제를 보고한다.
 
 ## 보안 · 데이터 규칙
-- 데이터는 data/ 폴더 JSON에 둔다.
+- 일정 데이터는 Supabase의 wx_tasks 표에 둔다. 브라우저 저장소나 JSON을 일정 저장소로 사용하지 않는다.
+- config.js에는 Supabase 주소와 공개용 키(publishable 또는 anon)만 둔다. secret 및 service_role 키는 사용하지 않는다.
 - 가상 데이터만 사용한다. 실제 이름 · 연락처 · 기관 내부 자료를 넣지 않는다.
 - 사용자가 입력한 글자는 textContent 로 표시한다.
 - 비밀 키는 코드 · 채팅 · GitHub 에 넣지 않는다.

@@ -46,4 +46,25 @@ function judge(kind, w) {
   return { level: 'ok', text: '진행' };
 }
 
-if (typeof module !== 'undefined') module.exports = { RULES, REGIONS, weatherUrl, parseWeather, judge };
+function makeMarkdown(rows, date) {
+  const escapeCell = value => String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\\/g, '&#92;')
+    .replace(/\|/g, '&#124;')
+    .replace(/\r\n|\r|\n/g, '<br>');
+  const lines = [
+    '# 현장 일정 판단 — ' + date,
+    '',
+    '| 일정 | 지역 | 구분 | 담당 | 날씨 | 판단 |',
+    '| --- | --- | --- | --- | --- | --- |',
+    ...rows.map(row => '| ' + row.map(escapeCell).join(' | ') + ' |'),
+    '',
+    `판단 기준 (교육용 가상 기준): 고소 작업 풍속 ${RULES.wind}m/s 이상 → 중지 검토 · 강수확률 ${RULES.rain}% 이상 → 우천 주의 · 기온 ${RULES.heat}℃ 이상 → 폭염 휴식 (실내 영향 없음, 우선순위: 강풍 → 폭염 → 우천)`,
+    '',
+  ];
+  return lines.join('\n');
+}
+
+if (typeof module !== 'undefined') module.exports = { RULES, REGIONS, weatherUrl, parseWeather, judge, makeMarkdown };
